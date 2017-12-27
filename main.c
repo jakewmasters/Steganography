@@ -2,16 +2,18 @@
 
 int main(int argc, char* argv[]) {
 
-    // Milestone 1
+    // read in input file
     FILE *inFile;
     inFile = fopen(argv[1], "r");
 
+    // create output file at specified path
     FILE *outFile;
     outFile = fopen(argv[2], "w");
 
+    // store message in buffer
     char *secretMessage = argv[3];
 
-    // Milestone 2
+    // bitmap parsing
     typedef struct header {
         unsigned int offset;
         int height;
@@ -33,19 +35,15 @@ int main(int argc, char* argv[]) {
     }
     printf("Height is %i\n", fileHeader.height);
 
-    // Milestone 3
     int numPixels = fileHeader.height * fileHeader.width;
 
-    // 1. send everything before offset to outFile
-
+    // copy headers (everything before offset) to outFile
     fseek(inFile, 0, SEEK_SET);
     char headerBytes[fileHeader.offset];
     fread(&headerBytes, fileHeader.offset, 1, inFile);
     fwrite(&headerBytes, fileHeader.offset, 1, outFile);
-    // I think this works?
 
-    // 2. encode message
-
+    // encode message in RGB bytes
     fseek(inFile, 54, SEEK_SET);
 
     int messageIndex = 0;
@@ -85,7 +83,7 @@ int main(int argc, char* argv[]) {
     }
     printf("\n");
 
-    // 3. encode null byte
+    // encode null byte after message has been encoded
     unsigned char nextByte;
 
     printf("encoding null byte!\n");
@@ -106,12 +104,12 @@ int main(int argc, char* argv[]) {
         pixelByteCounter++;
     }
 
-    // 4. encode unmodified pixels
+    // copy unmodified pixels to outFile
     char remainingPixelBytes[(numPixels*4) - pixelByteCounter];
     fread(&remainingPixelBytes, (numPixels*4) - pixelByteCounter, 1, inFile);
     fwrite(&remainingPixelBytes, (numPixels*4) - pixelByteCounter, 1, outFile);
 
-    // 5. close files
+    // close files
     fclose(inFile);
     fclose(outFile);
     printf("Done!\n");
